@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Velocity - Custom New Tab",
+    "name": "VelocityTab",
     "version": "1.0.0",
-    "description": "A sleek, dark-themed custom new tab page with plugin support",
+    "description": "A modern, dark-themed new tab page with plugin support",
     "permissions": [
         "storage",
         "identity"
@@ -15,14 +15,11 @@
         "48": "icons/icon48.png",
         "128": "icons/icon128.png"
     },
-    "oauth2": {
-        "client_id": "134656557995-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
-        "scopes": [
-            "https://www.googleapis.com/auth/userinfo.email",
-            "https://www.googleapis.com/auth/userinfo.profile"
-        ]
-    },
     "content_security_policy": {
-        "extension_pages": "script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'"
-    }
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
+    "web_accessible_resources": [{
+        "resources": ["plugins/*"],
+        "matches": ["<all_urls>"]
+    }]
 } 

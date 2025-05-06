@@ -1,165 +1,259 @@
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyDuAlOLXHWpO-bqTUw0SqIqL4WT-D0_T1o",
-    authDomain: "velocity-e7139.firebaseapp.com",
-    projectId: "velocity-e7139",
-    storageBucket: "velocity-e7139.firebasestorage.app",
-    messagingSenderId: "134656557995",
-    appId: "1:134656557995:web:09b345ad2e034fb7b448ee",
-    measurementId: "G-1JSWH6SWKB"
-};
-
-// Initialize Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const analytics = getAnalytics(app);
-
-// DOM Elements
-const userProfile = document.getElementById('userProfile');
-const userAvatar = document.getElementById('userAvatar');
-const profileModal = document.getElementById('profileModal');
-const closeModal = document.getElementById('closeModal');
-const searchInput = document.getElementById('searchInput');
-const searchButton = document.getElementById('searchButton');
-const tabButtons = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-const darkModeToggle = document.getElementById('darkModeToggle');
-
-// Google Sign In
-const googleProvider = new GoogleAuthProvider();
-
-async function signInWithGoogle() {
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-        await saveUserData(user);
-        updateUI(user);
-    } catch (error) {
-        console.error('Error signing in with Google:', error);
-    }
-}
-
-// Save user data to Firestore
-async function saveUserData(user) {
-    const userRef = doc(db, 'users', user.uid);
-    const userData = {
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        lastLogin: new Date().toISOString()
-    };
-    await setDoc(userRef, userData, { merge: true });
-}
-
-// Update UI based on user state
-function updateUI(user) {
-    if (user) {
-        userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-        document.getElementById('userInfo').innerHTML = `
-            <img src="${user.photoURL}" alt="${user.displayName}" class="w-20 h-20 rounded-full mx-auto mb-4">
-            <h3 class="text-xl font-bold">${user.displayName}</h3>
-            <p class="text-gray-400">${user.email}</p>
-        `;
-    } else {
-        userAvatar.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-        document.getElementById('userInfo').innerHTML = `
-            <p class="text-gray-400">Not signed in</p>
-            <button id="signInButton" class="mt-4 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
-                Sign in with Google
-            </button>
-        `;
-        document.getElementById('signInButton')?.addEventListener('click', signInWithGoogle);
-    }
-}
-
 // Search functionality
-function performSearch() {
+function handleSearch(event) {
+    event.preventDefault();
+    const searchInput = document.getElementById('searchInput');
     const query = searchInput.value.trim();
+    
     if (query) {
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        window.location.href = searchUrl;
+        // Redirect to Google search
+        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     }
 }
 
-// Modal functionality
-function toggleModal() {
-    profileModal.classList.toggle('hidden');
-}
-
-// Tab switching
-function switchTab(tabId) {
-    tabButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === tabId);
-    });
-    tabContents.forEach(content => {
-        content.classList.toggle('hidden', content.id !== tabId);
-    });
-}
-
-// Event Listeners
-userProfile.addEventListener('click', toggleModal);
-closeModal.addEventListener('click', toggleModal);
-searchButton.addEventListener('click', performSearch);
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performSearch();
-});
-
-tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-// Dark mode toggle
-darkModeToggle.addEventListener('change', (e) => {
-    document.documentElement.classList.toggle('dark', e.target.checked);
-    localStorage.setItem('darkMode', e.target.checked);
-});
-
-// Initialize dark mode from localStorage
-const darkMode = localStorage.getItem('darkMode') === 'true';
-darkModeToggle.checked = darkMode;
-document.documentElement.classList.toggle('dark', darkMode);
-
-// Auth state observer
-onAuthStateChanged(auth, (user) => {
-    updateUI(user);
-});
-
-// Load user preferences
-async function loadUserPreferences(userId) {
-    if (!userId) return;
-    const userRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-        const data = userDoc.data();
-        // Apply user preferences
-        if (data.preferences) {
-            darkModeToggle.checked = data.preferences.darkMode;
-            document.documentElement.classList.toggle('dark', data.preferences.darkMode);
-        }
+// Plugin Manager
+class PluginManager {
+    constructor() {
+        this.plugins = new Map();
+        this.activePlugins = new Set();
+        this.pluginContainer = document.getElementById('pluginContainer');
+        this.marketplaceGrid = document.getElementById('marketplaceGrid');
+        this.initializeEventListeners();
+        this.loadPlugins();
     }
-}
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    // Check for saved quick links
-    const savedLinks = JSON.parse(localStorage.getItem('quickLinks') || '[]');
-    if (savedLinks.length > 0) {
-        const quickLinksContainer = document.getElementById('quickLinks');
-        savedLinks.forEach(link => {
-            const linkElement = document.createElement('a');
-            linkElement.href = link.url;
-            linkElement.className = 'quick-link text-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700';
-            linkElement.innerHTML = `
-                <img src="${link.icon}" alt="${link.name}" class="w-8 h-8 mx-auto mb-2">
-                <span class="text-sm">${link.name}</span>
-            `;
-            quickLinksContainer.appendChild(linkElement);
+    initializeEventListeners() {
+        // Add event listeners for plugin management
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load plugins when the page loads
+            this.loadPlugins();
         });
     }
-}); 
+
+    async loadPlugins() {
+        try {
+            // Load installed plugins from localStorage
+            const installedPlugins = JSON.parse(localStorage.getItem('velocity_plugins') || '[]');
+            
+            // Clear existing plugins
+            this.plugins.clear();
+            this.pluginContainer.innerHTML = '';
+
+            // Load each installed plugin
+            for (const pluginId of installedPlugins) {
+                const pluginData = JSON.parse(localStorage.getItem(`velocity_plugin_${pluginId}`));
+                if (pluginData) {
+                    this.plugins.set(pluginId, pluginData);
+                    if (pluginData.active) {
+                        this.activatePlugin(pluginId);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading plugins:', error);
+        }
+    }
+
+    async installPlugin(pluginData) {
+        try {
+            const pluginId = crypto.randomUUID();
+            const plugin = {
+                id: pluginId,
+                ...pluginData,
+                active: false,
+                installedAt: new Date().toISOString()
+            };
+
+            // Save plugin data
+            localStorage.setItem(`velocity_plugin_${pluginId}`, JSON.stringify(plugin));
+
+            // Add to installed plugins list
+            const installedPlugins = JSON.parse(localStorage.getItem('velocity_plugins') || '[]');
+            installedPlugins.push(pluginId);
+            localStorage.setItem('velocity_plugins', JSON.stringify(installedPlugins));
+
+            // Add to plugins map
+            this.plugins.set(pluginId, plugin);
+
+            // Show success notification
+            this.showNotification('Plugin installed successfully!');
+        } catch (error) {
+            console.error('Error installing plugin:', error);
+            this.showNotification('Error installing plugin', true);
+        }
+    }
+
+    async uninstallPlugin(pluginId) {
+        try {
+            // Remove from installed plugins list
+            const installedPlugins = JSON.parse(localStorage.getItem('velocity_plugins') || '[]');
+            const updatedPlugins = installedPlugins.filter(id => id !== pluginId);
+            localStorage.setItem('velocity_plugins', JSON.stringify(updatedPlugins));
+
+            // Remove plugin data
+            localStorage.removeItem(`velocity_plugin_${pluginId}`);
+
+            // Remove from plugins map
+            this.plugins.delete(pluginId);
+
+            // Deactivate if active
+            this.deactivatePlugin(pluginId);
+
+            // Show success notification
+            this.showNotification('Plugin uninstalled successfully!');
+        } catch (error) {
+            console.error('Error uninstalling plugin:', error);
+            this.showNotification('Error uninstalling plugin', true);
+        }
+    }
+
+    async activatePlugin(pluginId) {
+        const plugin = this.plugins.get(pluginId);
+        if (!plugin) return;
+
+        try {
+            // Create a sandboxed iframe for the plugin
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+
+            // Execute the plugin code in the sandbox
+            const sandbox = iframe.contentWindow;
+            const pluginCode = plugin.code.replace(/\/\*[\s\S]*?\*\//, ''); // Remove manifest
+            sandbox.eval(pluginCode);
+
+            this.activePlugins.add(pluginId);
+            
+            // Update plugin state
+            plugin.active = true;
+            localStorage.setItem(`velocity_plugin_${pluginId}`, JSON.stringify(plugin));
+
+            // Show success notification
+            this.showNotification('Plugin activated successfully!');
+        } catch (error) {
+            console.error('Error activating plugin:', error);
+            this.showNotification('Error activating plugin', true);
+        }
+    }
+
+    deactivatePlugin(pluginId) {
+        this.activePlugins.delete(pluginId);
+        
+        // Update plugin state
+        const plugin = this.plugins.get(pluginId);
+        if (plugin) {
+            plugin.active = false;
+            localStorage.setItem(`velocity_plugin_${pluginId}`, JSON.stringify(plugin));
+        }
+
+        // Remove plugin's iframe if it exists
+        const iframe = document.querySelector(`iframe[data-plugin-id="${pluginId}"]`);
+        if (iframe) {
+            iframe.remove();
+        }
+    }
+
+    showNotification(message, isError = false) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white fade-in ${
+            isError ? 'bg-red-500' : 'bg-green-500'
+        }`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+}
+
+// Initialize plugin manager
+const pluginManager = new PluginManager();
+
+// Marketplace functions
+function openMarketplace() {
+    document.getElementById('marketplaceModal').classList.remove('hidden');
+    loadMarketplace();
+}
+
+function closeMarketplace() {
+    document.getElementById('marketplaceModal').classList.add('hidden');
+}
+
+async function loadMarketplace() {
+    const marketplaceGrid = document.getElementById('marketplaceGrid');
+    marketplaceGrid.innerHTML = '';
+
+    try {
+        // Fetch available plugins from the plugins directory
+        const response = await fetch('/plugins/index.json');
+        const plugins = await response.json();
+
+        plugins.forEach(plugin => {
+            const card = createPluginCard(plugin);
+            marketplaceGrid.appendChild(card);
+        });
+    } catch (error) {
+        console.error('Error loading marketplace:', error);
+        pluginManager.showNotification('Error loading marketplace', true);
+    }
+}
+
+function createPluginCard(plugin) {
+    const card = document.createElement('div');
+    card.className = 'bg-[#1a1a1a] rounded-lg p-4 border border-[#333] hover:border-red-500 transition-colors';
+    card.innerHTML = `
+        <div class="flex items-center space-x-3 mb-3">
+            <img src="${plugin.icon}" alt="${plugin.name}" class="w-10 h-10 rounded">
+            <div>
+                <h3 class="font-medium">${plugin.name}</h3>
+                <p class="text-sm text-gray-400">v${plugin.version}</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-300 mb-4">${plugin.description}</p>
+        <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-400">by ${plugin.author}</span>
+            <div class="space-x-2">
+                <button onclick="installPlugin('${plugin.id}')" 
+                        class="px-3 py-1 bg-red-500 hover:bg-red-600 rounded text-sm transition-colors">
+                    Install
+                </button>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+async function installPlugin(pluginId) {
+    try {
+        // Fetch plugin code from the plugins directory
+        const response = await fetch(`/plugins/${pluginId}.js`);
+        const pluginCode = await response.text();
+
+        // Extract manifest from the plugin code
+        const manifestMatch = pluginCode.match(/\/\*[\s\S]*?\*\//);
+        if (!manifestMatch) {
+            throw new Error('Plugin manifest not found');
+        }
+
+        const manifest = JSON.parse(manifestMatch[0].replace(/\/\*|\*\//g, ''));
+
+        // Create plugin object
+        const plugin = {
+            id: pluginId,
+            name: manifest.name,
+            description: manifest.description,
+            version: manifest.version,
+            icon: manifest.icon,
+            author: manifest.author,
+            code: pluginCode
+        };
+
+        // Install the plugin
+        await pluginManager.installPlugin(plugin);
+    } catch (error) {
+        console.error('Error installing plugin:', error);
+        pluginManager.showNotification('Error installing plugin', true);
+    }
+} 
