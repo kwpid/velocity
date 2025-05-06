@@ -3,174 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Velocity - New Tab</title>
+    <title>VelocityTab</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
-    <!-- User Profile Section -->
-    <div class="absolute top-4 right-4">
-        <div id="userProfile" class="cursor-pointer">
-            <img id="userAvatar" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" 
-                 alt="User Avatar" 
-                 class="w-10 h-10 rounded-full border-2 border-gray-700">
+<body class="bg-[#0a0a0a] text-gray-100 min-h-screen" x-data="{ sidebarOpen: false }">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-[#111111] transform transition-transform duration-300 ease-in-out"
+         :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-2xl font-bold text-red-500">VelocityTab</h1>
+                <button @click="sidebarOpen = false" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Profile Section -->
+            <div class="mb-8">
+                <div class="flex items-center space-x-3 mb-4">
+                    <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
+                    <div>
+                        <h3 class="font-medium">Guest User</h3>
+                        <p class="text-sm text-gray-400">Not signed in</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="space-y-2">
+                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg bg-red-500/10 text-red-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="openMarketplace()" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <span>Plugins</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>Settings</span>
+                </a>
+            </nav>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="flex flex-col items-center justify-center min-h-screen p-4">
-        <div class="w-full max-w-2xl">
-            <!-- Search Bar -->
-            <div class="relative">
+    <div class="min-h-screen" :class="{ 'ml-64': sidebarOpen }">
+        <!-- Top Bar -->
+        <div class="bg-[#111111] p-4 flex items-center justify-between">
+            <button @click="sidebarOpen = !sidebarOpen" class="text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="flex items-center space-x-4">
+                <button class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="max-w-2xl mx-auto mt-8 px-4">
+            <form onsubmit="handleSearch(event)" class="relative">
                 <input type="text" 
-                       id="searchInput" 
-                       placeholder="Search Google..." 
-                       class="w-full px-6 py-4 text-lg bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 text-gray-100">
-                <button id="searchButton" class="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       id="searchInput"
+                       class="w-full bg-[#1a1a1a] border border-[#333] rounded-lg pl-4 pr-12 py-3 text-white focus:border-red-500 focus:outline-none transition-colors"
+                       placeholder="Search the web...">
+                <button type="submit" 
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </button>
-            </div>
-
-            <!-- Quick Links -->
-            <div id="quickLinks" class="mt-8 grid grid-cols-4 gap-4">
-                <!-- Quick links will be dynamically added here -->
-            </div>
+            </form>
         </div>
-    </main>
 
-    <!-- User Profile Modal -->
-    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-gray-800 rounded-lg p-6 w-96">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Profile</h2>
-                <button id="closeModal" class="text-gray-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="tabs">
-                <div class="flex border-b border-gray-700">
-                    <button class="tab-btn active px-4 py-2" data-tab="profile">Profile</button>
-                    <button class="tab-btn px-4 py-2" data-tab="settings">Settings</button>
-                    <button class="tab-btn px-4 py-2" data-tab="plugins">My Plugins</button>
-                    <button class="tab-btn px-4 py-2" data-tab="marketplace">Marketplace</button>
-                </div>
-                <div id="profile" class="tab-content py-4">
-                    <div id="userInfo" class="text-center">
-                        <!-- User info will be populated here -->
-                    </div>
-                </div>
-                <div id="settings" class="tab-content hidden py-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span>Dark Mode</span>
-                            <label class="switch">
-                                <input type="checkbox" id="darkModeToggle" checked>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div id="plugins" class="tab-content hidden py-4">
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold">My Plugins</h3>
-                            <button id="uploadPlugin" class="btn btn-primary">
-                                Upload Plugin
-                            </button>
-                        </div>
-                        <div id="pluginList" class="space-y-2">
-                            <!-- Plugin list will be populated here -->
-                        </div>
-                    </div>
-                </div>
-                <div id="marketplace" class="tab-content hidden py-4">
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold">Plugin Marketplace</h3>
-                            <div class="flex space-x-2">
-                                <input type="text" 
-                                       id="marketplaceSearch" 
-                                       placeholder="Search plugins..." 
-                                       class="px-3 py-1 bg-gray-700 rounded">
-                                <select id="marketplaceFilter" class="px-3 py-1 bg-gray-700 rounded">
-                                    <option value="all">All</option>
-                                    <option value="popular">Popular</option>
-                                    <option value="recent">Recent</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div id="marketplaceGrid" class="marketplace-grid">
-                            <!-- Marketplace plugins will be populated here -->
-                        </div>
-                    </div>
+        <!-- Dashboard -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Plugin Containers -->
+                <div id="pluginContainer" class="space-y-6">
+                    <!-- Plugins will be dynamically added here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Plugin Editor Modal -->
-    <div id="pluginEditorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-gray-800 rounded-lg p-6 w-3/4 max-w-4xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Plugin Editor</h2>
-                <button id="closeEditorModal" class="text-gray-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Plugin Name</label>
-                        <input type="text" id="pluginName" class="w-full px-3 py-2 bg-gray-700 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Version</label>
-                        <input type="text" id="pluginVersion" class="w-full px-3 py-2 bg-gray-700 rounded">
-                    </div>
+    <!-- Plugin Marketplace Modal -->
+    <div id="marketplaceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-[#111111] rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-red-500">Plugin Marketplace</h2>
+                    <button class="text-gray-400 hover:text-white" onclick="closeMarketplace()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Description</label>
-                    <textarea id="pluginDescription" class="w-full px-3 py-2 bg-gray-700 rounded" rows="2"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Code</label>
-                    <div class="plugin-editor">
-                        <textarea id="pluginCode" class="w-full" rows="10"></textarea>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-4">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="pluginPublic">
-                            <span>Make Public</span>
-                        </label>
-                        <span class="version-badge">v1.0.0</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="savePlugin" class="btn btn-primary">Save</button>
-                        <button id="publishPlugin" class="btn btn-primary">Publish Update</button>
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="marketplaceGrid">
+                    <!-- Plugin cards will be added here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Plugin Container -->
-    <div id="pluginContainer" class="fixed bottom-4 right-4 space-y-4">
-        <!-- Active plugins will be rendered here -->
-    </div>
-
-    <script type="module" src="main.js"></script>
-    <script type="module" src="plugins.js"></script>
+    <script src="main.js" type="module"></script>
 </body>
 </html>

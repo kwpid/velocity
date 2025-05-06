@@ -1,0 +1,12 @@
+{
+    "plugins": [
+        {
+            "id": "clock",
+            "name": "Digital Clock",
+            "description": "Adds a digital clock to your dashboard",
+            "version": "1.0.0",
+            "icon": "https://via.placeholder.com/40",
+            "author": "Velocity"
+        }
+    ]
+}
