@@ -282,7 +282,7 @@ class PluginManager {
     async handlePluginUpload() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.js,.json';
+        input.accept = '.js';
         
         input.onchange = async (e) => {
             const file = e.target.files[0];
@@ -296,22 +296,43 @@ class PluginManager {
                     throw new Error('Invalid plugin manifest');
                 }
 
-                const plugin = {
-                    id: crypto.randomUUID(),
+                // Create plugin document
+                const pluginId = crypto.randomUUID();
+                const pluginRef = doc(db, 'plugins', pluginId);
+                
+                await setDoc(pluginRef, {
+                    id: pluginId,
                     name: manifest.name,
                     description: manifest.description,
                     version: manifest.version,
                     icon: manifest.icon,
                     code: content,
                     author: auth.currentUser?.uid,
-                    createdAt: new Date().toISOString()
-                };
+                    createdAt: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    isPublic: manifest.isPublic || false,
+                    downloads: 0,
+                    rating: 0,
+                    ratingCount: 0,
+                    deleted: false
+                });
 
-                await this.savePlugin(plugin);
+                // Add to user's plugins
+                const userRef = doc(db, 'users', auth.currentUser.uid);
+                const userDoc = await getDoc(userRef);
+                const userData = userDoc.data() || {};
+                const userPlugins = userData.plugins || [];
+                userPlugins.push(pluginId);
+                await setDoc(userRef, { plugins: userPlugins }, { merge: true });
+
+                // Show success notification
+                this.showNotification('Plugin uploaded successfully!');
+                
+                // Refresh plugin list
                 await this.loadPlugins();
             } catch (error) {
                 console.error('Error uploading plugin:', error);
-                alert('Error uploading plugin: ' + error.message);
+                this.showNotification('Error uploading plugin: ' + error.message, true);
             }
         };
 
@@ -486,6 +507,61 @@ class PluginManager {
             console.error('Error deleting plugin:', error);
             alert('Error deleting plugin: ' + error.message);
         }
+    }
+
+    async updatePlugin(pluginId, newFile) {
+        try {
+            const content = await newFile.text();
+            const manifest = this.parsePluginManifest(content);
+            
+            if (!manifest) {
+                throw new Error('Invalid plugin manifest');
+            }
+
+            const pluginRef = doc(db, 'plugins', pluginId);
+            const pluginDoc = await getDoc(pluginRef);
+            
+            if (!pluginDoc.exists()) {
+                throw new Error('Plugin not found');
+            }
+
+            // Create version history
+            const versionRef = doc(collection(db, 'plugin_versions'));
+            await setDoc(versionRef, {
+                pluginId: pluginId,
+                version: manifest.version,
+                code: content,
+                publishedAt: new Date().toISOString()
+            });
+
+            // Update plugin
+            await updateDoc(pluginRef, {
+                version: manifest.version,
+                code: content,
+                lastUpdated: new Date().toISOString()
+            });
+
+            this.showNotification('Plugin updated successfully!');
+            await this.loadPlugins();
+        } catch (error) {
+            console.error('Error updating plugin:', error);
+            this.showNotification('Error updating plugin: ' + error.message, true);
+        }
+    }
+
+    showNotification(message, isError = false) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white fade-in ${
+            isError ? 'bg-[#da3633]' : 'bg-[#238636]'
+        }`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 }
 

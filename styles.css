@@ -14,6 +14,7 @@
 body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 /* Custom Scrollbar */
@@ -40,11 +41,17 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     transition: all 0.2s ease;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 800px;
 }
 
 #searchInput:focus {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+    outline: none;
 }
 
 /* Modal Styles */
@@ -52,14 +59,19 @@ body {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* Plugin Card Styles */
 .plugin-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 1rem;
+    border-radius: 8px;
+    padding: 1.5rem;
     transition: all 0.2s ease;
 }
 
@@ -71,10 +83,11 @@ body {
 
 /* Button Styles */
 .btn {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;
     transition: all 0.2s ease;
+    font-size: 0.95rem;
 }
 
 .btn-primary {
@@ -100,7 +113,8 @@ body {
     color: var(--text-secondary);
     transition: all 0.2s ease;
     border-bottom: 2px solid transparent;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
 }
 
 .tab-btn:hover {
@@ -115,22 +129,256 @@ body {
 /* Plugin Marketplace */
 .marketplace-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
 }
 
 .marketplace-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 1rem;
+    border-radius: 8px;
+    padding: 1.5rem;
     transition: all 0.2s ease;
 }
 
 .marketplace-card:hover {
     border-color: var(--accent-blue);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Plugin Editor */
+.plugin-editor {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.plugin-editor textarea {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    width: 100%;
+    min-height: 300px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.plugin-editor textarea:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+    outline: none;
+}
+
+/* Version Badge */
+.version-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+/* Plugin Status */
+.plugin-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.plugin-status.public {
+    background: var(--accent-green);
+    color: white;
+}
+
+.plugin-status.private {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+/* Loading Spinner */
+.spinner {
+    border: 3px solid var(--bg-tertiary);
+    border-top: 3px solid var(--accent-blue);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    transition: .4s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-blue);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Quick Links Animation */
+.quick-link {
+    transition: transform 0.2s ease;
+}
+
+.quick-link:hover {
+    transform: translateY(-2px);
+}
+
+/* Plugin Container Animation */
+#pluginContainer {
+    transition: all 0.3s ease;
+}
+
+/* Modal Header */
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Modal Body */
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Form Elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+    outline: none;
+}
+
+/* Form Labels */
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Search and Filter Controls */
+.search-filter-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-filter-controls input,
+.search-filter-controls select {
+    flex: 1;
+}
+
+/* Plugin Grid Layout */
+.plugin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+/* Plugin Actions */
+.plugin-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* Plugin Info */
+.plugin-info {
+    margin-bottom: 1rem;
+}
+
+.plugin-info h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.plugin-info p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
 /* Animations */
@@ -152,130 +400,6 @@ body {
     animation: slideIn 0.3s ease forwards;
 }
 
-/* Plugin Editor */
-.plugin-editor {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 1rem;
-}
-
-.plugin-editor textarea {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.5rem;
-    width: 100%;
-    min-height: 200px;
-    font-family: monospace;
-}
-
-/* Version Badge */
-.version-badge {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-}
-
-/* Plugin Status */
-.plugin-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-}
-
-.plugin-status.public {
-    background: var(--accent-green);
-    color: white;
-}
-
-.plugin-status.private {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-}
-
-/* Loading Spinner */
-.spinner {
-    border: 3px solid var(--bg-tertiary);
-    border-top: 3px solid var(--accent-blue);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Switch Toggle */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-}
-
-input:checked + .slider {
-    background-color: #2196F3;
-}
-
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
-
-.slider.round {
-    border-radius: 24px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-/* Quick Links Animation */
-.quick-link {
-    transition: transform 0.2s ease;
-}
-
-.quick-link:hover {
-    transform: translateY(-2px);
-}
-
-/* Plugin Container Animation */
-#pluginContainer {
-    transition: all 0.3s ease;
+.fade-out {
+    animation: fadeIn 0.3s ease reverse forwards;
 } 
