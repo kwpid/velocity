@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,65 +8,19 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="bg-[#0a0a0a] text-gray-100 min-h-screen" x-data="{ sidebarOpen: false }">
-    <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 bg-[#111111] transform transition-transform duration-300 ease-in-out"
-         :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
-        <div class="p-4">
-            <div class="flex items-center justify-between mb-8">
-                <h1 class="text-2xl font-bold text-red-500">VelocityTab</h1>
-                <button @click="sidebarOpen = false" class="text-gray-400 hover:text-white">
+<body class="bg-[#0a0a0a] text-gray-100 min-h-screen" x-data="{ sidebarOpen: false, activeTab: 'dashboard' }">
+    <!-- Main Content -->
+    <div class="min-h-screen" :class="{ 'mr-64': sidebarOpen }">
+        <!-- Top Bar -->
+        <div class="bg-[#111111] p-4 flex items-center justify-between border-b border-[#333]">
+            <div class="flex items-center space-x-4">
+                <button @click="sidebarOpen = !sidebarOpen" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Profile Section -->
-            <div class="mb-8">
-                <div class="flex items-center space-x-3 mb-4">
-                    <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
-                    <div>
-                        <h3 class="font-medium">Guest User</h3>
-                        <p class="text-sm text-gray-400">Not signed in</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Navigation -->
-            <nav class="space-y-2">
-                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg bg-red-500/10 text-red-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" onclick="openMarketplace()" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
-                    <span>Plugins</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <span>Settings</span>
-                </a>
-            </nav>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="min-h-screen" :class="{ 'ml-64': sidebarOpen }">
-        <!-- Top Bar -->
-        <div class="bg-[#111111] p-4 flex items-center justify-between">
-            <button @click="sidebarOpen = !sidebarOpen" class="text-gray-400 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
+                </button>
+                <h1 class="text-xl font-bold text-red-500">VelocityTab</h1>
+            </div>
             <div class="flex items-center space-x-4">
                 <button class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,6 +54,61 @@
                     <!-- Plugins will be dynamically added here -->
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 right-0 w-64 bg-[#111111] transform transition-transform duration-300 ease-in-out border-l border-[#333]"
+         :class="{ 'translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold text-red-500">Menu</h2>
+                <button @click="sidebarOpen = false" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Profile Section -->
+            <div class="mb-8">
+                <div class="flex items-center space-x-3 mb-4">
+                    <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
+                    <div>
+                        <h3 class="font-medium">Guest User</h3>
+                        <p class="text-sm text-gray-400">Not signed in</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="space-y-2">
+                <button @click="activeTab = 'dashboard'" 
+                        class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300"
+                        :class="{ 'bg-red-500/10 text-red-500': activeTab === 'dashboard' }">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+                <button @click="activeTab = 'plugins'; openMarketplace()" 
+                        class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300"
+                        :class="{ 'bg-red-500/10 text-red-500': activeTab === 'plugins' }">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <span>Plugins</span>
+                </button>
+                <button @click="activeTab = 'settings'" 
+                        class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 text-gray-300"
+                        :class="{ 'bg-red-500/10 text-red-500': activeTab === 'settings' }">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>Settings</span>
+                </button>
+            </nav>
         </div>
     </div>
 
