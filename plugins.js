@@ -1,4 +1,4 @@
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 const db = getFirestore();
@@ -10,13 +10,273 @@ class PluginManager {
         this.activePlugins = new Set();
         this.pluginContainer = document.getElementById('pluginContainer');
         this.pluginList = document.getElementById('pluginList');
+        this.marketplaceGrid = document.getElementById('marketplaceGrid');
         this.uploadPlugin = document.getElementById('uploadPlugin');
+        this.pluginEditorModal = document.getElementById('pluginEditorModal');
+        this.closeEditorModal = document.getElementById('closeEditorModal');
+        this.savePlugin = document.getElementById('savePlugin');
+        this.publishPlugin = document.getElementById('publishPlugin');
+        this.marketplaceSearch = document.getElementById('marketplaceSearch');
+        this.marketplaceFilter = document.getElementById('marketplaceFilter');
         
+        this.currentEditingPlugin = null;
         this.initializeEventListeners();
+        this.initializeDatabase();
+    }
+
+    async initializeDatabase() {
+        // Create collections if they don't exist
+        const collections = ['plugins', 'users', 'plugin_versions', 'plugin_stats'];
+        for (const collectionName of collections) {
+            const collectionRef = collection(db, collectionName);
+            const q = query(collectionRef, limit(1));
+            await getDocs(q);
+        }
     }
 
     initializeEventListeners() {
-        this.uploadPlugin.addEventListener('click', () => this.handlePluginUpload());
+        this.uploadPlugin.addEventListener('click', () => this.openPluginEditor());
+        this.closeEditorModal.addEventListener('click', () => this.closePluginEditor());
+        this.savePlugin.addEventListener('click', () => this.savePluginChanges());
+        this.publishPlugin.addEventListener('click', () => this.publishPluginUpdate());
+        this.marketplaceSearch.addEventListener('input', () => this.searchMarketplace());
+        this.marketplaceFilter.addEventListener('change', () => this.filterMarketplace());
+    }
+
+    openPluginEditor(plugin = null) {
+        this.currentEditingPlugin = plugin;
+        const editor = this.pluginEditorModal;
+        
+        if (plugin) {
+            // Editing existing plugin
+            document.getElementById('pluginName').value = plugin.name;
+            document.getElementById('pluginVersion').value = plugin.version;
+            document.getElementById('pluginDescription').value = plugin.description;
+            document.getElementById('pluginCode').value = plugin.code;
+            document.getElementById('pluginPublic').checked = plugin.isPublic;
+            document.querySelector('.version-badge').textContent = `v${plugin.version}`;
+            this.publishPlugin.style.display = 'block';
+        } else {
+            // New plugin
+            document.getElementById('pluginName').value = '';
+            document.getElementById('pluginVersion').value = '1.0.0';
+            document.getElementById('pluginDescription').value = '';
+            document.getElementById('pluginCode').value = '';
+            document.getElementById('pluginPublic').checked = false;
+            document.querySelector('.version-badge').textContent = 'v1.0.0';
+            this.publishPlugin.style.display = 'none';
+        }
+        
+        editor.classList.remove('hidden');
+    }
+
+    closePluginEditor() {
+        this.pluginEditorModal.classList.add('hidden');
+        this.currentEditingPlugin = null;
+    }
+
+    async savePluginChanges() {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const pluginData = {
+            name: document.getElementById('pluginName').value,
+            version: document.getElementById('pluginVersion').value,
+            description: document.getElementById('pluginDescription').value,
+            code: document.getElementById('pluginCode').value,
+            isPublic: document.getElementById('pluginPublic').checked,
+            lastUpdated: new Date().toISOString()
+        };
+
+        if (this.currentEditingPlugin) {
+            // Update existing plugin
+            const pluginRef = doc(db, 'plugins', this.currentEditingPlugin.id);
+            await updateDoc(pluginRef, pluginData);
+        } else {
+            // Create new plugin
+            const pluginId = crypto.randomUUID();
+            const pluginRef = doc(db, 'plugins', pluginId);
+            await setDoc(pluginRef, {
+                ...pluginData,
+                id: pluginId,
+                author: user.uid,
+                createdAt: new Date().toISOString(),
+                downloads: 0,
+                rating: 0,
+                ratingCount: 0
+            });
+
+            // Add to user's plugins
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data() || {};
+            const userPlugins = userData.plugins || [];
+            userPlugins.push(pluginId);
+            await setDoc(userRef, { plugins: userPlugins }, { merge: true });
+        }
+
+        this.closePluginEditor();
+        await this.loadPlugins();
+    }
+
+    async publishPluginUpdate() {
+        if (!this.currentEditingPlugin) return;
+
+        const newVersion = document.getElementById('pluginVersion').value;
+        const pluginRef = doc(db, 'plugins', this.currentEditingPlugin.id);
+        
+        // Create version history
+        const versionRef = doc(collection(db, 'plugin_versions'));
+        await setDoc(versionRef, {
+            pluginId: this.currentEditingPlugin.id,
+            version: newVersion,
+            code: document.getElementById('pluginCode').value,
+            publishedAt: new Date().toISOString()
+        });
+
+        // Update plugin
+        await updateDoc(pluginRef, {
+            version: newVersion,
+            code: document.getElementById('pluginCode').value,
+            lastUpdated: new Date().toISOString()
+        });
+
+        this.closePluginEditor();
+        await this.loadPlugins();
+    }
+
+    async loadMarketplace() {
+        const q = query(
+            collection(db, 'plugins'),
+            where('isPublic', '==', true),
+            where('deleted', '==', false),
+            orderBy('downloads', 'desc')
+        );
+
+        const snapshot = await getDocs(q);
+        this.marketplaceGrid.innerHTML = '';
+
+        snapshot.forEach(doc => {
+            const plugin = doc.data();
+            this.renderMarketplaceCard(plugin);
+        });
+    }
+
+    renderMarketplaceCard(plugin) {
+        const card = document.createElement('div');
+        card.className = 'marketplace-card fade-in';
+        card.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center space-x-3">
+                    <img src="${plugin.icon || 'https://via.placeholder.com/32'}" alt="${plugin.name}" class="w-8 h-8">
+                    <div>
+                        <h4 class="font-semibold">${plugin.name}</h4>
+                        <p class="text-sm text-gray-400">v${plugin.version}</p>
+                    </div>
+                </div>
+                <span class="plugin-status ${plugin.isPublic ? 'public' : 'private'}">
+                    ${plugin.isPublic ? 'Public' : 'Private'}
+                </span>
+            </div>
+            <p class="text-sm text-gray-400 mb-3">${plugin.description}</p>
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-400">${plugin.downloads} downloads</span>
+                    <span class="text-sm text-gray-400">★ ${plugin.rating.toFixed(1)}</span>
+                </div>
+                <button class="btn btn-primary install-plugin" data-plugin-id="${plugin.id}">
+                    Install
+                </button>
+            </div>
+        `;
+
+        card.querySelector('.install-plugin').addEventListener('click', () => this.installPlugin(plugin.id));
+        this.marketplaceGrid.appendChild(card);
+    }
+
+    async installPlugin(pluginId) {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        try {
+            const pluginRef = doc(db, 'plugins', pluginId);
+            const pluginDoc = await getDoc(pluginRef);
+            
+            if (!pluginDoc.exists()) {
+                throw new Error('Plugin not found');
+            }
+
+            // Add to user's installed plugins
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data() || {};
+            const installedPlugins = userData.installedPlugins || [];
+            
+            if (!installedPlugins.includes(pluginId)) {
+                installedPlugins.push(pluginId);
+                await setDoc(userRef, { installedPlugins }, { merge: true });
+
+                // Increment download count
+                await updateDoc(pluginRef, {
+                    downloads: increment(1)
+                });
+            }
+
+            await this.loadPlugins();
+        } catch (error) {
+            console.error('Error installing plugin:', error);
+            alert('Error installing plugin: ' + error.message);
+        }
+    }
+
+    async searchMarketplace() {
+        const searchTerm = this.marketplaceSearch.value.toLowerCase();
+        const cards = this.marketplaceGrid.querySelectorAll('.marketplace-card');
+        
+        cards.forEach(card => {
+            const name = card.querySelector('h4').textContent.toLowerCase();
+            const description = card.querySelector('p').textContent.toLowerCase();
+            const isVisible = name.includes(searchTerm) || description.includes(searchTerm);
+            card.style.display = isVisible ? 'block' : 'none';
+        });
+    }
+
+    async filterMarketplace() {
+        const filter = this.marketplaceFilter.value;
+        let q;
+
+        switch (filter) {
+            case 'popular':
+                q = query(
+                    collection(db, 'plugins'),
+                    where('isPublic', '==', true),
+                    where('deleted', '==', false),
+                    orderBy('downloads', 'desc')
+                );
+                break;
+            case 'recent':
+                q = query(
+                    collection(db, 'plugins'),
+                    where('isPublic', '==', true),
+                    where('deleted', '==', false),
+                    orderBy('lastUpdated', 'desc')
+                );
+                break;
+            default:
+                q = query(
+                    collection(db, 'plugins'),
+                    where('isPublic', '==', true),
+                    where('deleted', '==', false)
+                );
+        }
+
+        const snapshot = await getDocs(q);
+        this.marketplaceGrid.innerHTML = '';
+
+        snapshot.forEach(doc => {
+            const plugin = doc.data();
+            this.renderMarketplaceCard(plugin);
+        });
     }
 
     async handlePluginUpload() {
@@ -236,5 +496,6 @@ const pluginManager = new PluginManager();
 auth.onAuthStateChanged((user) => {
     if (user) {
         pluginManager.loadPlugins();
+        pluginManager.loadMarketplace();
     }
 }); 
