@@ -1,1 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity - New Tab</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- User Profile Section -->
+    <div class="absolute top-4 right-4">
+        <div id="userProfile" class="cursor-pointer">
+            <img id="userAvatar" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" 
+                 alt="User Avatar" 
+                 class="w-10 h-10 rounded-full border-2 border-gray-700">
+        </div>
+    </div>
 
+    <!-- Main Content -->
+    <main class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-2xl">
+            <!-- Search Bar -->
+            <div class="relative">
+                <input type="text" 
+                       id="searchInput" 
+                       placeholder="Search Google..." 
+                       class="w-full px-6 py-4 text-lg bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 text-gray-100">
+                <button id="searchButton" class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Quick Links -->
+            <div id="quickLinks" class="mt-8 grid grid-cols-4 gap-4">
+                <!-- Quick links will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- User Profile Modal -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-gray-800 rounded-lg p-6 w-96">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Profile</h2>
+                <button id="closeModal" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="tabs">
+                <div class="flex border-b border-gray-700">
+                    <button class="tab-btn active px-4 py-2" data-tab="profile">Profile</button>
+                    <button class="tab-btn px-4 py-2" data-tab="settings">Settings</button>
+                    <button class="tab-btn px-4 py-2" data-tab="plugins">Plugins</button>
+                </div>
+                <div id="profile" class="tab-content py-4">
+                    <div id="userInfo" class="text-center">
+                        <!-- User info will be populated here -->
+                    </div>
+                </div>
+                <div id="settings" class="tab-content hidden py-4">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span>Dark Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <!-- More settings will be added here -->
+                    </div>
+                </div>
+                <div id="plugins" class="tab-content hidden py-4">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">Installed Plugins</h3>
+                            <button id="uploadPlugin" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
+                                Upload Plugin
+                            </button>
+                        </div>
+                        <div id="pluginList" class="space-y-2">
+                            <!-- Plugin list will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plugin Container -->
+    <div id="pluginContainer" class="fixed bottom-4 right-4 space-y-4">
+        <!-- Active plugins will be rendered here -->
+    </div>
+
+    <script type="module" src="main.js"></script>
+    <script type="module" src="plugins.js"></script>
+</body>
+</html>
